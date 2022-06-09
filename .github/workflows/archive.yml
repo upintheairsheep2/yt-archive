@@ -15,8 +15,7 @@ jobs:
   archive-channels:
     runs-on: ubuntu-latest
     strategy:
-      matrix:
-        channel: [https://www.twitch.tv/phantom_arcade/]
+      
     
     steps:
       - name: Set up Python
