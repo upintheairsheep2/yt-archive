@@ -3,7 +3,14 @@ on:
     # run every 40th minute of every hour
     - cron:  '0 14 * * 1'
   workflow_dispatch:
-
+    inputs:
+      channel:
+        description: 'Channel or video'
+        required: true
+      comments:
+        description: 'Archive comments (true or false)'
+        required: true
+        default: true
 jobs:
   archive-channels:
     runs-on: ubuntu-latest
