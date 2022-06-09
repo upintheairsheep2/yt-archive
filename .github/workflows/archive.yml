@@ -14,7 +14,7 @@ on:
 jobs:
   archive-channels:
     runs-on: ubuntu-latest
-    strategy:
+    
       
     
     steps:
