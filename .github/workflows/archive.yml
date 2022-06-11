@@ -41,10 +41,10 @@ jobs:
           IA_PASSWORD: ${{ secrets.IA_PASSWORD }}
         run: |
           ia configure --username="$IA_EMAIL" --password="$IA_PASSWORD"
-          yt-dlp -j --no-warnings --flat-playlist "${{ github.event.inputs.channel }}" | jq -r ".urls" > result.log
+          yt-dlp -j -v --no-warnings --flat-playlist "${{ github.event.inputs.channel }}" | jq -r ".urls" > result.log
           while IFS="" read -r p || [ -n "$p" ]
           do
-            tubeup $p --use-download-archive true --get-comments ${{ github.event.inputs.comments }} 
+            tubeup $p --debug --use-download-archive true --get-comments ${{ github.event.inputs.comments }} 
           done < result.log
 
       - name: Get sha1 of .ytdlarchive
