@@ -33,7 +33,7 @@ jobs:
         id: cache
         with:
           path: '~/.tubeup'
-          key: ${{ github.event.inputs.channel }}
+          key: tubeup
 
       - name: Download and upload channel videos
         env: 
