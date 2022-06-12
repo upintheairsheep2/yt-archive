@@ -21,6 +21,18 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
+
+jobs:
+  archive-channels:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        channel: [https://www.youtube.com/watch?v=z1h5iC2XO-o]
+    
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
           python-version: '3.x'
 
       - name: Install dependencies
@@ -28,12 +40,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install yt-dlp internetarchive tubeup
           mkdir -p ~/.tubeup
-
       - uses: actions/cache@v3
         id: cache
         with:
           path: '~/.tubeup'
-          key: tubeup
+          key: ${{ matrix.channel }}
 
       - name: Download and upload channel videos
         env: 
@@ -41,12 +52,8 @@ jobs:
           IA_PASSWORD: ${{ secrets.IA_PASSWORD }}
         run: |
           ia configure --username="$IA_EMAIL" --password="$IA_PASSWORD"
-          yt-dlp -j -v --no-warnings --flat-playlist "${{ github.event.inputs.channel }}" | jq -r ".urls" > result.log
-          while IFS="" read -r p || [ -n "$p" ]
-          do
-            tubeup $p --debug --get-comments --use-download-archive || true
+          tubeup ${{ matrix.channel }} --get-comments --use-download-archive || true
           done < result.log
-
       - name: Get sha1 of .ytdlarchive
         id: sha1
         run: |
