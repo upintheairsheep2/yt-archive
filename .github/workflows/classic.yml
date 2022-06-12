@@ -1,7 +1,4 @@
 on:
-  schedule:
-    # run every 40th minute of every hour
-    - cron:  '0 14 * * 1'
   workflow_dispatch:
     inputs:
       channel:
