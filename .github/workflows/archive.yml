@@ -1,3 +1,4 @@
+
 on:
   schedule:
     # run every 40th minute of every hour
@@ -7,21 +8,7 @@ on:
       channel:
         description: 'Channel to archive with tubeup'
         required: true
-      comments:
-        description: 'Archive comments (true or false)'
-        required: false
-        default: true
-jobs:
-  archive-channels:
-    runs-on: ubuntu-latest
-    
       
-    
-    steps:
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-
 jobs:
   archive-channels:
     runs-on: ubuntu-latest
