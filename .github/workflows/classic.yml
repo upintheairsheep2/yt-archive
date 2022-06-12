@@ -1,0 +1,46 @@
+on:
+  schedule:
+    # run every 40th minute of every hour
+    - cron:  '0 14 * * 1'
+  workflow_dispatch:
+
+jobs:
+  archive-channels:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        channel: [UCWiaC1AUNPZsrf85jngad2g, UCuRlug-b0DKAK15GkAA1l6g, UCUI7hFEsdQDbg1-4jDlCEIQ, UC2iHKwB86wMBwJO-FrLSN6g, UChZ1hlC7s5LGgfvF7YJ_Tgw, UCsxQgA60KbwOICc5cXkt62Q, UCkM44KoOAzZUZIeZ7U0XmQw, UC8DYecdPC_M1I0-gff9D5ug, UCnS2IQMd9F7ItAXYA7X9irQ, UCQ2HStCZQGHdz9Fxdzz3Xmg, UCS6JVq2K4IWPZY-WCb9nD_A, UChnpmPbMk_ydP-kukYlpK7Q, UCHwE6E94ALQw4aulTHXhtEQ, UC_Jk2bYzCMJhW4XD09fr7ig, UCZvXEPVQaKdVYZDAK7IUvBg, UCf6AComRIFhmNsrNZeNpZxQ, UCpGmIMAzHMdONFV7i59KQGw, UCWiaC1AUNPZsrf85jngad2g, UC122UkIATHrdzZNONFzXHSg, UC2ZG0q-e7kJUijWIWARJfww, UCok7Fp-eFTc2i5f5XsCZsrg, UCnRN3vB3DUmxb-6rz7tlFCw, UCdvAnrCXTvLnBBWuNQ5UlbQ, UCAC4g1LMqr94RNOZJCVthSQ, UCVvwyk2FnDY94xUXpdBqGAA, UCpT46G77geEsEUOKzb49enQ, UC45TEIruqmhSHDkV8Mnn9Gw, UCBdCaezoJipdjufwKz-l2ZA, UCevKzawKjk-GDsAfe5ctIvQ, UCy6FQPAddTADou_GgwuY40A, UCleVUgeqcJcZzde-dZ90Gpg, UCZHLcqD05W23Prk-FHjsRLA, UC0MIRvnA9q7X1xluGFvyt2g, UCbvhpSoR3TQobIbIM9euZcQ, UCgAIPOyi1TjGzN3gfVbJ1cg, UCPoSYir-KCtAuybN-zsvoXg, UCR2vIHxqKXXD90UIilBfpGA, UCm4ukk3Su3p62cI5QmFpeZQ, UC1Yq1vShuN1ft0myXFchcsQ, UC0v-GoU_xhZ1sWj2iJ7YUrw, UCoQgjtOIfKtXPheLuXG4KwA, UCU7FiFOtlubFmJRK_9_Zgsw, UCQ2HStCZQGHdz9Fxdzz3Xmg, UCQ8ric-oLXw0I9APjlNygUQ, UCY9lENXCiZkzdh8Fg5FWq3w, UCT4MsfPZxANLFYwMeNxsQww, UC_nuIy26G_UK5NwS3jV_WUA, UCjj_hlrzNvvpdY76pS_kZZA, UCqLjqU4NG78n0yo3IiHz7bg, UC5KxR_bz4Z-Rmg0ZTBu2siw, UCa_D6PSa7zj5arOfEw52jXA, UCdE-I9sTojhzINuNb5FiL3A, UCJMFJLbFXlx-jbGswJiRV8g, UCWawPPCyZuKiIjdB9eAsJgA, UCx0GvMuF5iyubaKNRAFat_Q]
+    
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install yt-dlp internetarchive tubeup
+          mkdir -p ~/.tubeup
+      - uses: actions/cache@v3
+        id: cache
+        with:
+          path: '~/.tubeup'
+          key: ${{ matrix.channel }}
+
+      - name: Download and upload channel videos
+        env: 
+          IA_EMAIL: ${{ secrets.IA_EMAIL }}
+          IA_PASSWORD: ${{ secrets.IA_PASSWORD }}
+        run: |
+          ia configure --username="$IA_EMAIL" --password="$IA_PASSWORD"
+          yt-dlp -j --no-warnings --flat-playlist "https://youtube.com/channel/${{ matrix.channel }}" | jq -r ".urls" > result.log
+          while IFS="" read -r p || [ -n "$p" ]
+          do
+            tubeup $p --use-download-archive || true
+          done < result.log
+      - name: Get sha1 of .ytdlarchive
+        id: sha1
+        run: |
+          export BRAP=$(cat ~/.tubeup/.ytdlarchive | shasum - | head -c 40)
+          echo '::set-output name=sha1::$BRAP'
