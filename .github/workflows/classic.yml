@@ -1,7 +1,13 @@
 on:
+  schedule:
+    # run every 40th minute of every hour
+    - cron:  '0 14 * * 1'
   workflow_dispatch:
-                    inputs:
-
+    inputs:
+      channel:
+        description: 'Channel to archive with tubeup'
+        required: true
+      
 jobs:
   archive-channels:
     runs-on: ubuntu-latest
